@@ -5,9 +5,19 @@ import { chromium } from 'playwright';
 
   const page = await browser.newPage();
   await page.goto('http://localhost:3000/');
-  const content = await page.textContent('.MuiTableBody-root > tr:nth-child(1) > td:nth-child(1)');
-  console.log(content);
-  await page.click('[aria-label="Next Page"]');
+
+  while (true) {
+    const content = await page.evaluate(() => {
+      const table = document.querySelector('.MuiTableBody-root') as HTMLTableElement;
+      return Array.from(table.rows).map((row) => row.cells[0].textContent);
+    });
+    console.log(content);
+
+    if (await page.isDisabled('[aria-label="Next Page"]')) {
+      break;
+    }
+    await page.click('[aria-label="Next Page"]');
+  }
 
   await browser.close();
 })();
